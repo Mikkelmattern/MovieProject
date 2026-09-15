@@ -1,26 +1,35 @@
 package mikkelmattern.utils;
 
-import app.exceptions.ApiException;
+import mikkelmattern.exceptions.ApiException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class Utils {
+public final class Utils {
 
-    public static String getPropertyValue(String propName, String resourceName)  {
-        try (InputStream is = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
-            Properties prop = new Properties();
-            prop.load(is);
+    private Utils() {}
 
-            String value = prop.getProperty(propName);
-            if (value != null) {
-                return value.trim();  // Trim whitespace
-            } else {
-                throw new ApiException(500, String.format("Property %s not found in %s", propName, resourceName));
+    public static String getPropertyValue(String propertyName, String resourceName) {
+        try (InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
+
+            if (inputStream == null) {
+                throw new ApiException(500, "Resource not found: " + resourceName);
             }
-        } catch (IOException ex) {
-            throw new ApiException(500, String.format("Could not read property %s.", propName));
+
+            Properties properties = new Properties();
+            properties.load(inputStream);
+
+            String value = properties.getProperty(propertyName);
+
+            if (value == null || value.isBlank()) {
+                throw new ApiException(500, "Property " + propertyName + " not found in " + resourceName);
+            }
+
+            return value.trim();
+
+        } catch (IOException exception) {
+            throw new ApiException(500, "Could not read " + resourceName);
         }
     }
 }
