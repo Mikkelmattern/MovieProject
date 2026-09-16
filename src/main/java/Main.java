@@ -1,3 +1,5 @@
+import jakarta.persistence.EntityManagerFactory;
+import mikkelmattern.config.HibernateConfig;
 import mikkelmattern.tmdb.TmdbClient;
 
 public class Main {
@@ -9,6 +11,6 @@ public class Main {
                 "/movie/11?language=en-US"
         );
 
-        System.out.println(json);
+        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
     }
 }
