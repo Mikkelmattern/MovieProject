@@ -8,11 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -46,10 +42,6 @@ public class Movie {
     private String homepage;
 
     private String imdbId;
-
-    private String backdropPath;
-
-    private String posterPath;
 
     private String releaseDate;
 
@@ -86,4 +78,34 @@ public class Movie {
     @ElementCollection
     @CollectionTable(name = "movie_spoken_languages", joinColumns = @JoinColumn(name = "movie_id"))
     private List<String> spokenLanguages;
+
+    @Builder
+    public Movie(String title, String originalTitle, String originalLanguage, boolean adult, boolean video,
+                 String overview, String tagline, String status, String homepage, String imdbId,
+                 String releaseDate, Long budget, Long revenue, Integer runtime, Double popularity,
+                 Double voteAverage, Integer voteCount, String belongsToCollection, List<Genre> genres,
+                 List<String> productionCompanies, List<String> productionCountries, List<String> spokenLanguages) {
+        this.title = title;
+        this.originalTitle = originalTitle;
+        this.originalLanguage = originalLanguage;
+        this.adult = adult;
+        this.video = video;
+        this.overview = overview;
+        this.tagline = tagline;
+        this.status = status;
+        this.homepage = homepage;
+        this.imdbId = imdbId;
+        this.releaseDate = releaseDate;
+        this.budget = budget;
+        this.revenue = revenue;
+        this.runtime = runtime;
+        this.popularity = popularity;
+        this.voteAverage = voteAverage;
+        this.voteCount = voteCount;
+        this.belongsToCollection = belongsToCollection;
+        this.genres = genres;
+        this.productionCompanies = productionCompanies;
+        this.productionCountries = productionCountries;
+        this.spokenLanguages = spokenLanguages;
+    }
 }
