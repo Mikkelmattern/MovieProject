@@ -7,6 +7,7 @@ import mikkelmattern.entities.Movie;
 import java.util.function.Function;
 
 public class MovieDAOImpl implements Dao<Movie> {
+
     private final EntityManagerFactory emf;
 
     public MovieDAOImpl(EntityManagerFactory emf) {
@@ -15,56 +16,74 @@ public class MovieDAOImpl implements Dao<Movie> {
 
     @Override
     public Movie find(long id) {
-        return executeQuery(em -> em.find(Movie.class, id));
+        return executeQuery(
+                em -> em.find(Movie.class, id)
+        );
     }
 
     @Override
     public Movie save(Movie movie) {
-        return executeQuery(em -> {
+        return executeTransaction(em -> {
             em.persist(movie);
             return movie;
-        }, true);
+        });
     }
 
     @Override
-    public void update(Movie movie) {
-        executeQuery(em -> em.merge(movie), true);
+    public Movie update(Movie movie) {
+        return executeTransaction(
+                em -> em.merge(movie)
+        );
     }
 
     @Override
     public boolean delete(Movie movie) {
-        return executeQuery(em -> {
-            if (!em.contains(movie)) {
-                Movie existing = em.find(Movie.class, movie.getId());
-                if (existing == null) {
-                    return false;
-                }
-                em.remove(existing);
-            } else {
-                em.remove(movie);
+        return executeTransaction(em -> {
+            Movie existing = em.find(
+                    Movie.class,
+                    movie.getId()
+            );
+
+            if (existing == null) {
+                return false;
             }
+
+            em.remove(existing);
             return true;
-        }, true);
+        });
     }
 
-    private <R> R executeQuery(Function<EntityManager, R> action) {
-        try (EntityManager em = emf.createEntityManager()) {
+    private <R> R executeQuery(
+            Function<EntityManager, R> action
+    ) {
+        try (EntityManager em =
+                     emf.createEntityManager()) {
+
             return action.apply(em);
         }
     }
 
-    private <R> R executeQuery(Function<EntityManager, R> action, boolean isTransactional) {
+    private <R> R executeTransaction(
+            Function<EntityManager, R> action
+    ) {
         EntityManager em = emf.createEntityManager();
+
         try {
             em.getTransaction().begin();
+
             R result = action.apply(em);
+
             em.getTransaction().commit();
+
             return result;
-        } catch (RuntimeException e) {
+
+        } catch (RuntimeException exception) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw e;
+
+            throw exception;
+
         } finally {
             em.close();
         }

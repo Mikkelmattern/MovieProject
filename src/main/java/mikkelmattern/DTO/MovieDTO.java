@@ -14,7 +14,6 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class MovieDTO {
 
     private Long id;
@@ -24,13 +23,13 @@ public class MovieDTO {
     private Long budget;
     private Long revenue;
     private Integer runtime;
+    private Double popularity;
 
-    @JsonProperty("release_year")
+    @JsonProperty("release_date")
     private String releaseDate;
 
     @JsonProperty("vote_average")
-    private double voteAverage;
+    private Double voteAverage;
 
-    private List<GenreDTO> genre;
-
+    private List<GenreDTO> genres;
 }
