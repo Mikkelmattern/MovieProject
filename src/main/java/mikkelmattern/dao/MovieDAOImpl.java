@@ -6,7 +6,7 @@ import mikkelmattern.entities.Movie;
 
 import java.util.function.Function;
 
-public class MovieDAOImpl implements MovieDAO {
+public class MovieDAOImpl implements Dao<Movie> {
     private final EntityManagerFactory emf;
 
     public MovieDAOImpl(EntityManagerFactory emf) {
