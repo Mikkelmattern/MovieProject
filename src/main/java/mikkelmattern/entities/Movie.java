@@ -1,24 +1,27 @@
 package mikkelmattern.entities;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Getter
 @Setter
 @Builder
+@ToString(exclude = "genres")
 public class Movie {
 
     @Id
@@ -36,13 +39,21 @@ public class Movie {
 
     private Integer runtime;
 
+    private String releaseDate;
+
+    private Double popularity;
+
     private Double voteAverage;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "movie_genre",
-            joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id")
+            joinColumns =
+            @JoinColumn(name = "movie_id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "genre_id")
     )
-    private List<Genre> genres;
+    @Builder.Default
+    private List<Genre> genres =
+            new ArrayList<>();
 }

@@ -24,28 +24,25 @@ public class ActorDAOImpl implements Dao<Actor> {
         return executeQuery(em -> {
             em.persist(actor);
             return actor;
-        }, true);
+        });
     }
 
     @Override
-    public void update(Actor actor) {
+    public Actor update(Actor actor) {
         return executeTransaction(em -> em.merge(actor));
     }
 
     @Override
     public boolean delete(Actor actor) {
-        return executeQuery(em -> {
-            if (!em.contains(actor)) {
-                Actor existing = em.find(Actor.class, actor.getId());
-                if (existing == null) {
-                    return false;
-                }
-                em.remove(existing);
-            } else {
-                em.remove(actor);
-            }
+        return executeTransaction(em -> {
+            Actor existing = em.find(Actor.class, actor.getId());
+
+            if (existing == null) { return false; }
+
+            em.remove(existing);
+
             return true;
-        }, true);
+        });
     }
 
     private <R> R executeQuery(Function<EntityManager, R> action) {

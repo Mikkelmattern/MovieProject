@@ -1,8 +1,8 @@
 package mikkelmattern.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManagerFactory;
+import mikkelmattern.DTO.CreditsDTO;
+import mikkelmattern.DTO.CrewDTO;
+import mikkelmattern.DTO.GenreDTO;
 import mikkelmattern.DTO.MovieDTO;
 import mikkelmattern.dao.GenreDAOImpl;
 import mikkelmattern.dao.MovieDAOImpl;
@@ -11,51 +11,84 @@ import mikkelmattern.entities.Movie;
 import mikkelmattern.tmdb.TmdbClient;
 
 import java.util.List;
-import java.util.Objects;
 
 public class MovieService {
 
-    private final EntityManagerFactory emf;
-    MovieDTO dto = new MovieDTO();
-    private final MovieDAOImpl movieDAO = new MovieDAOImpl(emf);
-    private final GenreDAOImpl genreDAO = new GenreDAOImpl(emf);
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    public Movie fetchAndSaveMovie(String json) throws JsonProcessingException {
-        MovieDTO dto = objectMapper.readValue(json, MovieDTO.class);
-        Movie movie = toEntity();
-        return movieDAO.save(movie);
-    }
-
     private final TmdbClient tmdbClient;
+    private final MovieDAOImpl movieDAO;
+    private final GenreDAOImpl genreDAO;
 
-    public MovieService(TmdbClient tmdbClient, MovieDAOImpl movieDAO, EntityManagerFactory emf) {
+    public MovieService(
+        TmdbClient tmdbClient,
+        MovieDAOImpl movieDAO,
+        GenreDAOImpl genreDAO
+    ) {
         this.tmdbClient = tmdbClient;
-        this.emf = emf;
+        this.movieDAO = movieDAO;
+        this.genreDAO = genreDAO;
     }
+
     public Movie fetchAndSaveMovie(long movieId) {
         MovieDTO dto = tmdbClient.getMovie(movieId);
 
         Movie movie = toEntity(dto);
+
+        Movie existing = movieDAO.find(movieId);
+
+        if (existing == null) {
+            return movieDAO.save(movie);
+        }
+
+        return movieDAO.update(movie);
     }
 
-    private Movie toEntity(){
+    public List<CrewDTO> getDirectors(long movieId) {
+        CreditsDTO credits = tmdbClient.getCredits(movieId);
 
-        List<Genre> genreList = dto.getGenre()
-                .stream()
-                .map(genreDTO -> genreDAO.find(genreDTO.getId()))
-                .filter(Objects::nonNull)
-                .toList();
+        if (credits.getCrew() == null) {
+            return List.of();
+        }
+
+        return credits.getCrew().stream()
+                .filter(member ->
+                    "Director".equals(member.getJob()))
+                    .toList();
+    }
+
+    private Movie toEntity(MovieDTO dto) {
+        List<Genre> genres = dto.getGenres() == null
+            ? List.of()
+            : dto.getGenres().stream()
+            .map(this::findOrSaveGenre)
+            .toList();
 
         return Movie.builder()
-                .id(dto.getId())
-                .adult(dto.isAdult())
-                .title(dto.getTitle())
-                .tagline(dto.getTagline())
-                .budget(dto.getBudget())
-                .genres(genreList)
-                .revenue(dto.getRevenue())
-                .runtime(dto.getRuntime())
-                .voteAverage(dto.getVoteAverage())
-                .build();
+            .id(dto.getId())
+            .title(dto.getTitle())
+            .adult(dto.isAdult())
+            .tagline(dto.getTagline())
+            .budget(dto.getBudget())
+            .revenue(dto.getRevenue())
+            .runtime(dto.getRuntime())
+            .releaseDate(dto.getReleaseDate())
+            .popularity(dto.getPopularity())
+            .voteAverage(dto.getVoteAverage())
+            .genres(genres)
+            .build();
+    }
+
+    private Genre findOrSaveGenre(GenreDTO dto) {
+        Genre existing = genreDAO.find(dto.getId());
+
+        if (existing != null) {
+            return existing;
+        }
+
+        Genre genre = new Genre(
+            dto.getId(),
+            dto.getName()
+        );
+
+        return genreDAO.save(genre);
     }
 }
