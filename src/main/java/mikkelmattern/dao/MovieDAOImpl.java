@@ -92,7 +92,7 @@ public class MovieDAOImpl implements Dao<Movie> {
 
     public List<Movie> searchByTitle(String searchText) {
         if (searchText == null || searchText.isBlank()) {
-            return List.of();
+            return null;
         }
 
         return executeQuery(em ->

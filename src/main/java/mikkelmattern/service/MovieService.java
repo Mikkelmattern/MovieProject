@@ -1,5 +1,6 @@
 package mikkelmattern.service;
 
+import jakarta.persistence.EntityManagerFactory;
 import mikkelmattern.DTO.CreditsDTO;
 import mikkelmattern.DTO.CrewDTO;
 import mikkelmattern.DTO.GenreDTO;
@@ -19,16 +20,15 @@ public class MovieService {
     private final GenreDAOImpl genreDAO;
 
     public MovieService(
-        TmdbClient tmdbClient,
-        MovieDAOImpl movieDAO,
-        GenreDAOImpl genreDAO
+            TmdbClient tmdbClient,
+            EntityManagerFactory emf
     ) {
         this.tmdbClient = tmdbClient;
-        this.movieDAO = movieDAO;
-        this.genreDAO = genreDAO;
+        this.movieDAO = new MovieDAOImpl(emf);
+        this.genreDAO = new GenreDAOImpl(emf);
     }
 
-    public Movie fetchAndSaveMovie(long movieId) {
+    public Movie fetchAndSaveMovie(Long movieId) {
         MovieDTO dto = tmdbClient.getMovie(movieId);
 
         Movie movie = toEntity(dto);
@@ -50,37 +50,39 @@ public class MovieService {
         }
 
         return credits.getCrew().stream()
-            .filter(member ->
-            "Director".equals(member.getJob()))
-            .toList();
+                .filter(member ->
+                        "Director".equals(member.getJob()))
+                .toList();
     }
 
     private Movie toEntity(MovieDTO dto) {
         List<Genre> genres = dto.getGenres() == null
-            ? List.of()
-            : dto.getGenres().stream()
-            .map(this::findOrSaveGenre)
-            .toList();
+                ? List.of()
+                : dto.getGenres().stream()
+                .map(this::findOrSaveGenre)
+                .toList();
 
         return Movie.builder()
-            .id(dto.getId())
-            .title(dto.getTitle())
-            .adult(dto.isAdult())
-            .tagline(dto.getTagline())
-            .budget(dto.getBudget())
-            .revenue(dto.getRevenue())
-            .runtime(dto.getRuntime())
-            .releaseDate(dto.getReleaseDate())
-            .popularity(dto.getPopularity())
-            .voteAverage(dto.getVoteAverage())
-            .genres(genres)
-            .build();
+                .id(dto.getId())
+                .title(dto.getTitle())
+                .adult(dto.isAdult())
+                .tagline(dto.getTagline())
+                .budget(dto.getBudget())
+                .revenue(dto.getRevenue())
+                .runtime(dto.getRuntime())
+                .releaseDate(dto.getReleaseDate())
+                .popularity(dto.getPopularity())
+                .voteAverage(dto.getVoteAverage())
+                .genres(genres)
+                .build();
     }
 
     private Genre findOrSaveGenre(GenreDTO dto) {
         Genre existing = genreDAO.find(dto.getId());
 
-        if (existing != null) { return existing; }
+        if (existing != null) {
+            return existing;
+        }
 
         Genre genre = new Genre(dto.getId(), dto.getName());
 
@@ -90,4 +92,5 @@ public class MovieService {
     public List<Movie> searchByTitle(String searchText) {
         return movieDAO.searchByTitle(searchText);
     }
+
 }

@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 public class TmdbClient {
 
+    // https://api.themoviedb.org/3/movie/1?language=en-US
     private static final String BASE_URL = "https://api.themoviedb.org/3";
 
     private final HttpClient httpClient;
@@ -51,12 +52,14 @@ public class TmdbClient {
         }
     }
 
-    public String get(String endpoint) {HttpRequest request = HttpRequest.newBuilder()
+    public String get(String endpoint) {
+        HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
                 .header("Authorization", "Bearer " + accessToken)
                 .header("Accept", "application/json").GET().build();
 
-        try {HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new ApiException(response.statusCode(), "TMDb request failed: " + response.body());
             }
