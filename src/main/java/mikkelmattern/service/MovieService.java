@@ -28,6 +28,17 @@ public class MovieService {
         this.genreDAO = new GenreDAOImpl(emf);
     }
 
+    // Til Unit tests
+    public MovieService(
+            TmdbClient tmdbClient,
+            MovieDAOImpl movieDAO,
+            GenreDAOImpl genreDAO
+    ) {
+        this.tmdbClient = tmdbClient;
+        this.movieDAO = movieDAO;
+        this.genreDAO = genreDAO;
+    }
+
     public Movie fetchAndSaveMovie(Long movieId) {
         MovieDTO dto = tmdbClient.getMovie(movieId);
 

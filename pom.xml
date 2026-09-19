@@ -21,6 +21,7 @@
         <org.slf4j>2.0.17</org.slf4j>
         <hamcrest>3.0</hamcrest>
         <jackson.version>2.20.1</jackson.version>
+        <mockito.version>5.20.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -135,6 +136,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${org.slf4j}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

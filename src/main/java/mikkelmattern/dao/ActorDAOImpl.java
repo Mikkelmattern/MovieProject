@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import mikkelmattern.entities.Actor;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class ActorDAOImpl implements Dao<Actor> {
@@ -74,5 +75,29 @@ public class ActorDAOImpl implements Dao<Actor> {
         } finally {
             em.close();
         }
+    }
+
+    public List<Actor> searchByName(String searchText) {
+        if (searchText == null || searchText.isBlank()) {
+            return List.of();
+        }
+
+        return executeQuery(em ->
+                em.createQuery(
+                    """
+                    SELECT actor
+                    FROM Actor actor
+                    WHERE LOWER(actor.name)
+                        LIKE LOWER(:searchText)
+                    ORDER BY actor.name
+                    """,
+                    Actor.class
+                )
+                .setParameter(
+                    "searchText",
+                    "%" + searchText.trim() + "%"
+                )
+            .getResultList()
+        );
     }
 }
