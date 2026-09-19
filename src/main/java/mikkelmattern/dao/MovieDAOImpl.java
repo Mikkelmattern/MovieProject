@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import mikkelmattern.entities.Movie;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class MovieDAOImpl implements Dao<Movie> {
@@ -87,5 +88,30 @@ public class MovieDAOImpl implements Dao<Movie> {
         } finally {
             em.close();
         }
+    }
+
+    public List<Movie> searchByTitle(String searchText) {
+        if (searchText == null || searchText.isBlank()) {
+            return List.of();
+        }
+
+        return executeQuery(em ->
+            em.createQuery(
+                """
+                SELECT DISTINCT movie
+                FROM Movie movie
+                LEFT JOIN FETCH movie.genres
+                WHERE LOWER(movie.title)
+                    LIKE LOWER(:searchText)
+                ORDER BY movie.title
+                """,
+                Movie.class
+            )
+            .setParameter(
+                "searchText",
+                "%" + searchText.trim() + "%"
+            )
+            .getResultList()
+        );
     }
 }

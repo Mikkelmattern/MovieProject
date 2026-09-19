@@ -4,14 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mikkelmattern.DTO.CreditsDTO;
 import mikkelmattern.DTO.MovieDTO;
+import mikkelmattern.DTO.MovieSearchResponseDTO;
+import mikkelmattern.DTO.PersonSearchResponseDTO;
 import mikkelmattern.exceptions.ApiException;
 import mikkelmattern.utils.Utils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 public class TmdbClient {
 
@@ -62,6 +66,76 @@ public class TmdbClient {
 
         } catch (InterruptedException exception) {Thread.currentThread().interrupt();
             throw new ApiException(500, "TMDb request was interrupted");
+        }
+    }
+
+    public MovieSearchResponseDTO searchMovies(
+            String searchText
+    ) {
+        if (searchText == null || searchText.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Search text cannot be empty"
+            );
+        }
+
+        String encodedSearchText = URLEncoder.encode(
+                searchText.trim(),
+                StandardCharsets.UTF_8
+        );
+
+        String json = get(
+                "/search/movie"
+                        + "?query=" + encodedSearchText
+                        + "&language=en-US"
+                        + "&include_adult=false"
+        );
+
+        try {
+            return objectMapper.readValue(
+                    json,
+                    MovieSearchResponseDTO.class
+            );
+        } catch (JsonProcessingException exception) {
+            throw new ApiException(
+                    500,
+                    "Could not convert search JSON: "
+                            + exception.getMessage()
+            );
+        }
+    }
+
+    public PersonSearchResponseDTO searchPeople(
+            String searchText
+    ) {
+        if (searchText == null || searchText.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Search text cannot be empty"
+            );
+        }
+
+        String encodedSearchText = URLEncoder.encode(
+                searchText.trim(),
+                StandardCharsets.UTF_8
+        );
+
+        String json = get(
+                "/search/person"
+                        + "?query=" + encodedSearchText
+                        + "&language=en-US"
+                        + "&include_adult=false"
+        );
+
+        try {
+            return objectMapper.readValue(
+                    json,
+                    PersonSearchResponseDTO.class
+            );
+        } catch (JsonProcessingException exception) {
+            throw new ApiException(
+                    500,
+                    "Could not convert person search JSON: "
+                            + exception.getMessage()
+            );
         }
     }
 }

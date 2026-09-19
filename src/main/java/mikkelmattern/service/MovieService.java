@@ -50,9 +50,9 @@ public class MovieService {
         }
 
         return credits.getCrew().stream()
-                .filter(member ->
-                    "Director".equals(member.getJob()))
-                    .toList();
+            .filter(member ->
+            "Director".equals(member.getJob()))
+            .toList();
     }
 
     private Movie toEntity(MovieDTO dto) {
@@ -80,15 +80,14 @@ public class MovieService {
     private Genre findOrSaveGenre(GenreDTO dto) {
         Genre existing = genreDAO.find(dto.getId());
 
-        if (existing != null) {
-            return existing;
-        }
+        if (existing != null) { return existing; }
 
-        Genre genre = new Genre(
-            dto.getId(),
-            dto.getName()
-        );
+        Genre genre = new Genre(dto.getId(), dto.getName());
 
         return genreDAO.save(genre);
+    }
+
+    public List<Movie> searchByTitle(String searchText) {
+        return movieDAO.searchByTitle(searchText);
     }
 }
