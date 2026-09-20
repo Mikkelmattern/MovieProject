@@ -6,16 +6,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
-
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreditsDTO {
+public class CrewDTO {
 
     private Long id;
-    private List<CastDTO> cast;
-    private List<CrewDTO> crew;
+    private String name;
+    private String department;
+    private String character;
+    private String job;
 }

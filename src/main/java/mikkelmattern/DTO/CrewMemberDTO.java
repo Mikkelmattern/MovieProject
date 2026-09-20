@@ -1,4 +1,4 @@
 package mikkelmattern.DTO;
 
-public interface DTO {
+public class CrewMemberDTO {
 }
